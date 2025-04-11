@@ -112,6 +112,7 @@ router.get('/buyers/all', auth, checkRole(['financer', 'broker']), async (req, r
                 },
                 {
                     ...buyerData,
+                    id: buyerData.id + 'sdfsd',
                     with_financing: false,
                     credit_limit: null,
                     available_credit: null,
