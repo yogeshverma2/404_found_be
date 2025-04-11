@@ -43,7 +43,7 @@ router.post('/trade', auth, checkRole(['broker']), async (req, res) => {
 
         // Get all suppliers to notify them
         const suppliers = await User.findAll({
-            where: { role: 'supplier', broker_id: req.user.id }
+            where: { role: 'supplier' }
         });
 
         // Send WhatsApp notifications to all suppliers
@@ -599,9 +599,14 @@ router.post('/invoice', auth, checkRole(['broker']), async (req, res) => {
             status: 'pending',
             broker_id: req.user.id
         });
+        const order = await Order.findOne({
+            where: {
+                id: order_id
+            }
+        });
 
         // Get supplier details for notification
-        const supplier = await User.findByPk(ship_from);
+        const supplier = await User.findByPk(order.supplier_id);
         if (!supplier) {
             return res.status(404).json({ error: 'Supplier not found' });
         }
@@ -788,6 +793,22 @@ router.post('/invoice/dummy', auth, checkRole(['broker']), async (req, res) => {
             broker_id: req.user.id,
             file_path: `/broker/invoices/${filename}`
         });
+        const order = await Order.findOne({
+            where: {
+                id: order_id
+            }
+        });
+
+        // Get supplier details for notification
+        const supplier = await User.findByPk(order.supplier_id);
+        if (supplier && supplier.phone) {
+            const message = `📄 New Invoice Request!\n\n` +
+                `Order ID: ${order_id}\n` +
+                `Amount: ₹${final_amount}\n\n` +
+                `Please provide your invoice number by replying:\n` +
+                `invoice ${invoice.id} <your_invoice_number>`;
+            await whatsapp.sendMessage(supplier.phone, message);
+        }
         const broker = await User.findByPk(invoice.broker_id);
         if (broker && broker.phone) {
             const message = `📄 Invoice Number Updated!\n\n` +

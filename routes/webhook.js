@@ -51,7 +51,7 @@ router.post('/webhook', express.json(), async (req, res) => {
 async function handleIncomingMessage(from, messageText) {
     const text = messageText.toLowerCase();
 
-    if (text.startsWith(' ̰')) {
+    if (text.startsWith('accept trade')) {
         const tradeId = messageText.split(' ')[2];
         if (!tradeId) {
             await whatsapp.sendMessage(from, 'Please provide a trade ID. Format: accept trade <trade_id>');
